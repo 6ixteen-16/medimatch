@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Blood Drive Bulletins{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div class="flex-between" style="flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h1>Blood Drive Bulletins</h1>
+        <p>Scheduled drives, urgent appeals, and health campaigns near you</p>
+      </div>
+      {% if request.user.is_authenticated and request.user.role in 'clinic_admin,bank_admin,superadmin' %}
+        <a href="{% url 'bulletins:create' %}" class="btn btn-primary">+ Post Bulletin</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Filters -->
+  <div class="card mb-6">
+    <div class="card-body" style="padding:1rem 1.5rem;">
+      <form method="get" style="display:flex;gap:1rem;flex-wrap:wrap;align-items:center;">
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+          <a href="{% url 'bulletins:list' %}" class="btn btn-sm {% if not selected_category %}btn-secondary{% else %}btn-ghost{% endif %}">All</a>
+          <a href="?category=blood_drive{% if selected_blood_type %}&blood_type={{ selected_blood_type }}{% endif %}" class="btn btn-sm {% if selected_category == 'blood_drive' %}btn-secondary{% else %}btn-ghost{% endif %}">Blood Drives</a>
+          <a href="?category=urgent_appeal{% if selected_blood_type %}&blood_type={{ selected_blood_type }}{% endif %}" class="btn btn-sm {% if selected_category == 'urgent_appeal' %}btn-danger{% else %}btn-ghost{% endif %}">Urgent Appeals</a>
+          <a href="?category=awareness{% if selected_blood_type %}&blood_type={{ selected_blood_type }}{% endif %}" class="btn btn-sm {% if selected_category == 'awareness' %}btn-secondary{% else %}btn-ghost{% endif %}">Awareness</a>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:0.5rem;align-items:center;">
+          <select name="blood_type" onchange="this.form.submit()" style="width:auto;padding:6px 12px;font-size:0.85rem;">
+            <option value="">All blood types</option>
+            {% for bt in blood_types %}
+              <option value="{{ bt }}" {% if selected_blood_type == bt %}selected{% endif %}>{{ bt }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if bulletins %}
+    <div class="grid-3">
+      {% for b in bulletins %}
+        <div class="bulletin-card {% if b.category == 'urgent_appeal' %}urgent-appeal{% endif %}">
+          <div class="bulletin-card-body">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
+              <span class="badge {% if b.category == 'urgent_appeal' %}badge-danger{% elif b.category == 'blood_drive' %}badge-info{% else %}badge-muted{% endif %}">
+                {{ b.get_category_display }}
+              </span>
+              <span style="font-size:0.78rem;color:var(--color-text-muted);">{{ b.created_at|timesince }} ago</span>
+            </div>
+            <h4 style="margin-bottom:0.5rem;">
+              <a href="{% url 'bulletins:detail' b.pk %}" style="color:var(--color-primary);">{{ b.title }}</a>
+            </h4>
+            <p style="color:var(--color-text-muted);font-size:0.88rem;margin-bottom:0.75rem;">
+               {{ b.facility.name }}{% if b.facility.district %}, {{ b.facility.district }}{% endif %}
+            </p>
+            <p style="font-size:0.9rem;color:var(--color-text);margin-bottom:0.75rem;">
+              {{ b.body|truncatewords:25 }}
+            </p>
+            {% if b.blood_type_list %}
+              <div class="blood-types-list">
+                {% for bt in b.blood_type_list %}
+                  <span class="bt-badge">{{ bt }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+          <div class="bulletin-card-footer" style="display:flex;justify-content:space-between;align-items:center;">
+            <span>
+              {% if b.event_date %} {{ b.event_date|date:"D, M j" }}{% if b.event_time %} · {{ b.event_time|time:"H:i" }}{% endif %}{% endif %}
+            </span>
+            <a href="{% url 'bulletins:detail' b.pk %}" style="font-size:0.82rem;font-weight:600;">Read more →</a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"></div>
+      <h3>No bulletins found</h3>
+      <p>No blood drives or appeals match your current filters. Check back soon.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

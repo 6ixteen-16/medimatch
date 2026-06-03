@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}My Donor Profile{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+      {% if profile.profile_photo %}
+        <img src="{{ profile.profile_photo.url }}" class="profile-photo-lg" alt="Profile photo">
+      {% else %}
+        <div style="width:100px;height:100px;border-radius:50%;background:var(--color-accent);display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700;color:white;">
+          {{ user.first_name|first|upper }}
+        </div>
+      {% endif %}
+      <div>
+        <h1 style="color:white;margin-bottom:0.5rem;">{{ user.get_full_name }}</h1>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+          <span class="bt-badge">{{ profile.blood_type }}</span>
+          <span class="badge badge-{{ profile.status }}">{{ profile.get_status_display }}</span>
+          {% if profile.needs_transport %}<span class="badge badge-info"> Needs Transport</span>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="grid-2">
+    <!-- Profile info -->
+    <div>
+      <div class="card mb-6">
+        <div class="card-header"><h4>Personal Details</h4></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div><p class="section-title">Blood Type</p><span class="bt-badge">{{ profile.blood_type }}</span></div>
+            <div><p class="section-title">Age</p><p>{{ profile.age }} years</p></div>
+            <div><p class="section-title">Gender</p><p>{{ profile.get_gender_display }}</p></div>
+            <div><p class="section-title">District</p><p>{{ profile.district }}</p></div>
+            <div><p class="section-title">Total Donations</p><p>{{ profile.total_donations }}</p></div>
+            {% if profile.last_donation_date %}
+            <div><p class="section-title">Last Donated</p><p>{{ profile.last_donation_date|date:"M j, Y" }}</p></div>
+            {% endif %}
+          </div>
+          {% if profile.next_eligible_date %}
+            <div class="alert alert-info" style="margin-top:1rem;">
+              Next eligible to donate: <strong>{{ profile.next_eligible_date|date:"M j, Y" }}</strong>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if donations %}
+      <div class="card">
+        <div class="card-header"><h4>Donation History</h4></div>
+        <div class="card-body">
+          {% for d in donations %}
+            <div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--color-border);">
+              <div>
+                <p style="margin:0;font-weight:600;">{{ d.blood_units }}L</p>
+                <p style="margin:0;font-size:0.82rem;color:var(--color-text-muted);">{{ d.facility.name }}</p>
+              </div>
+              <p style="margin:0;font-size:0.85rem;color:var(--color-text-muted);">{{ d.donated_at|date:"M j, Y" }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Eligibility & transport status -->
+    <div>
+      {% if profile.eligibility %}
+      <div class="card mb-6">
+        <div class="card-header">
+          <h4>Eligibility Status</h4>
+          {% if profile.eligibility.is_auto_flagged %}
+            <span class="badge badge-flagged"> Flagged</span>
+          {% else %}
+            <span class="badge badge-approved">✓ Clear</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if profile.eligibility.is_auto_flagged %}
+            <div class="alert alert-warning">
+              <p><strong>Profile flagged for review.</strong> Reason: {{ profile.eligibility.flagged_reason }}. A health officer will contact you.</p>
+            </div>
+          {% else %}
+            <p style="color:var(--color-success);">✓ Your eligibility checklist shows no disqualifying conditions. Your profile is under review by a health officer.</p>
+          {% endif %}
+          <p class="text-muted" style="font-size:0.8rem;margin-top:1rem;">This checklist is a self-screening tool only. All donated blood undergoes mandatory clinical laboratory testing before use.</p>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if profile.needs_transport %}
+      <div class="card">
+        <div class="card-header"><h4>Transport Requests</h4></div>
+        <div class="card-body">
+          {% if profile.transport_requests.all %}
+            {% for tr in profile.transport_requests.all|slice:":3" %}
+              <div style="padding:0.75rem 0;border-bottom:1px solid var(--color-border);">
+                <div style="display:flex;justify-content:space-between;">
+                  <span class="badge badge-{{ tr.status }}">{{ tr.get_status_display }}</span>
+                  <span style="font-size:0.82rem;color:var(--color-text-muted);">{{ tr.created_at|date:"M j" }}</span>
+                </div>
+                {% if tr.voucher_code %}
+                  <p style="margin-top:0.5rem;font-size:0.88rem;">Voucher: <code>{{ tr.voucher_code }}</code></p>
+                {% endif %}
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted">No transport requests yet.</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

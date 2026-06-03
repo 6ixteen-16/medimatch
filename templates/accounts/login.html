@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block body_class %}no-pad{% endblock %}
+{% block content %}
+<div class="auth-split" style="margin-top:calc(-1 * var(--space-8));">
+  <div class="auth-panel-left">
+    <div class="auth-cross">✛</div>
+    <div style="position:relative;z-index:1;">
+      <h2>"Every drop counts.<br>Every second matters."</h2>
+      <p style="margin-top:1.5rem;max-width:320px;">Uganda's community blood coordination platform — connecting donors, clinics, and blood banks in real time.</p>
+    </div>
+  </div>
+  <div class="auth-panel-right">
+    <div class="auth-card">
+      <p class="section-title">Welcome back</p>
+      <h2 style="margin-bottom:2rem;">Sign in to MediMatch</h2>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="id_username">Email address</label>
+          {{ form.username }}
+          {% if form.username.errors %}<p class="field-error">{{ form.username.errors|join:", " }}</p>{% endif %}
+        </div>
+        <div class="form-group">
+          <label for="id_password">Password</label>
+          {{ form.password }}
+          {% if form.password.errors %}<p class="field-error">{{ form.password.errors|join:", " }}</p>{% endif %}
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+          <label style="display:flex;align-items:center;gap:0.5rem;font-weight:400;cursor:pointer;">
+            <input type="checkbox" name="remember_me" style="width:auto;"> Remember me
+          </label>
+          <a href="{% url 'account_reset_password' %}" style="font-size:0.85rem;">Forgot password?</a>
+        </div>
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger">{{ form.non_field_errors|join:", " }}</div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">Sign In</button>
+      </form>
+
+      <p style="text-align:center;margin-top:1.5rem;color:var(--color-text-muted);font-size:0.9rem;">
+        New here? <a href="{% url 'accounts:register' %}">Register as a donor</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% if active %}
+  {% for sos in active %}
+    <div class="sos-card {{ sos.urgency }}{% if sos.is_overdue %} overdue{% endif %}">
+      <div class="sos-card-header">
+        <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+          <span style="font-weight:700;font-size:1.05rem;">#{{ sos.pk }}</span>
+          <span class="bt-badge" style="font-size:0.9rem;">{{ sos.blood_type_needed }}</span>
+          <span class="badge {% if sos.urgency == 'critical' %}badge-danger{% elif sos.urgency == 'urgent' %}badge-warning{% else %}badge-info{% endif %}">
+            {{ sos.get_urgency_display }}
+          </span>
+          {% if sos.is_overdue %}<span class="badge badge-danger"> OVERDUE</span>{% endif %}
+        </div>
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span class="badge badge-{% if sos.status == 'open' %}danger{% elif sos.status == 'acknowledged' %}warning{% elif sos.status == 'in_transit' %}info{% endif %}">
+            {{ sos.get_status_display }}
+          </span>
+          <a href="{% url 'sos:detail' sos.pk %}" class="btn btn-ghost btn-sm">View →</a>
+        </div>
+      </div>
+      <div>
+        <p style="font-weight:600;margin:0 0 0.25rem;">{{ sos.requesting_facility.name }}</p>
+        <p style="font-size:0.88rem;color:var(--color-text-muted);margin:0;">{{ sos.patient_condition|truncatewords:20 }}</p>
+      </div>
+      <div class="sos-meta">
+        <span> {{ sos.units_needed }} unit{{ sos.units_needed|pluralize }}</span>
+        <span> {{ sos.time_elapsed }}</span>
+        {% if sos.target_bank %}<span>→ {{ sos.target_bank.name }}</span>{% else %}<span>→ All blood banks</span>{% endif %}
+        {% if sos.deadline %}<span> Deadline {{ sos.deadline|date:"H:i" }}</span>{% endif %}
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="empty-state" style="padding:3rem;">
+    <div class="empty-icon"></div>
+    <h3>No active SOS requests</h3>
+    <p>All current emergencies have been resolved.</p>
+  </div>
+{% endif %}

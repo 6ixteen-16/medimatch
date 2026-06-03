@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Donor Registry{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div class="flex-between">
+      <div>
+        <h1>Donor Registry</h1>
+        <p>Search and manage registered blood donors</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <!-- Search filters -->
+  <div class="card mb-6">
+    <div class="card-body">
+      <form method="get" hx-get="{% url 'donors:search' %}" hx-target="#results" hx-trigger="change, submit">
+        {% csrf_token %}
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+          <div style="flex:1;min-width:140px;">
+            <label>Blood type</label>
+            {{ form.blood_type }}
+          </div>
+          <div style="flex:1;min-width:140px;">
+            <label>District</label>
+            {{ form.district }}
+          </div>
+          <div style="flex:1;min-width:140px;">
+            <label>Status</label>
+            {{ form.status }}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            <label style="display:flex;align-items:center;gap:0.5rem;font-weight:400;cursor:pointer;">{{ form.transport_needed }} Needs transport</label>
+            <label style="display:flex;align-items:center;gap:0.5rem;font-weight:400;cursor:pointer;">{{ form.available }} Available now</label>
+          </div>
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="results">
+    {% include 'donors/_search_results.html' %}
+  </div>
+</div>
+{% endblock %}

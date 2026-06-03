@@ -1,0 +1,21 @@
+{% if active_sos_list %}
+  {% for sos in active_sos_list %}
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem;border-radius:var(--radius-md);margin-bottom:0.5rem;background:{% if sos.is_overdue %}#FEF2F2{% else %}var(--color-surface-alt){% endif %};">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="bt-badge" style="font-size:0.85rem;">{{ sos.blood_type_needed }}</span>
+        <div>
+          <p style="margin:0;font-size:0.85rem;font-weight:600;">{{ sos.requesting_facility.name }}</p>
+          <p style="margin:0;font-size:0.75rem;color:var(--color-text-muted);">{{ sos.time_elapsed }} · {{ sos.get_status_display }}</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.5rem;">
+        {% if sos.is_overdue %}<span class="badge badge-danger" style="font-size:0.65rem;">OVERDUE</span>{% endif %}
+        <a href="{% url 'sos:detail' sos.pk %}" class="btn btn-ghost btn-sm">→</a>
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <div style="text-align:center;padding:1.5rem;color:var(--color-text-muted);">
+    <p>✓ No active SOS requests</p>
+  </div>
+{% endif %}

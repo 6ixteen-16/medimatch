@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}{{ bulletin.title }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div class="flex-between" style="flex-wrap:wrap;gap:1rem;">
+      <div>
+        <span class="badge {% if bulletin.category == 'urgent_appeal' %}badge-danger{% else %}badge-info{% endif %}" style="margin-bottom:0.75rem;display:inline-flex;">
+          {{ bulletin.get_category_display }}
+        </span>
+        <h1 style="color:white;">{{ bulletin.title }}</h1>
+        <p>{{ bulletin.facility.name }}{% if bulletin.facility.district %} · {{ bulletin.facility.district }}{% endif %}</p>
+      </div>
+      {% if request.user.is_authenticated and request.user.role in 'clinic_admin,bank_admin,superadmin' %}
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+          <a href="{% url 'bulletins:edit' bulletin.pk %}" class="btn btn-ghost" style="border-color:rgba(255,255,255,0.4);color:white;">Edit</a>
+          {% if bulletin.status == 'draft' %}
+            <form method="post" action="{% url 'bulletins:publish' bulletin.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-success">Publish</button>
+            </form>
+          {% endif %}
+          {% if bulletin.status == 'published' and not bulletin.sms_sent %}
+            <form method="post" action="{% url 'bulletins:notify' bulletin.pk %}"
+                  hx-post="{% url 'bulletins:notify' bulletin.pk %}"
+                  hx-target="#notify-btn">
+              {% csrf_token %}
+              <div id="notify-btn">
+                <button type="submit" class="btn btn-primary"> Notify Donors by SMS</button>
+              </div>
+            </form>
+          {% elif bulletin.sms_sent %}
+            <span class="badge badge-success" style="padding:10px 16px;">✓ SMS Sent {{ bulletin.sms_sent_at|date:"M j, H:i" }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="grid-2" style="grid-template-columns:2fr 1fr;">
+    <div>
+      <div class="card mb-6">
+        <div class="card-body">
+          <p style="font-size:1.05rem;line-height:1.75;white-space:pre-wrap;">{{ bulletin.body }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <!-- Event details -->
+      <div class="card mb-6">
+        <div class="card-header"><h4>Event Details</h4></div>
+        <div class="card-body">
+          {% if bulletin.event_date %}
+            <div style="margin-bottom:1rem;">
+              <p class="section-title">Date & Time</p>
+              <p style="font-size:1.05rem;font-weight:600;">{{ bulletin.event_date|date:"l, F j, Y" }}</p>
+              {% if bulletin.event_time %}<p style="color:var(--color-text-muted);">{{ bulletin.event_time|time:"H:i" }}</p>{% endif %}
+            </div>
+          {% endif %}
+          {% if bulletin.event_location %}
+            <div style="margin-bottom:1rem;">
+              <p class="section-title">Location</p>
+              <p> {{ bulletin.event_location }}</p>
+            </div>
+          {% endif %}
+          <div style="margin-bottom:1rem;">
+            <p class="section-title">Facility</p>
+            <p>{{ bulletin.facility.name }}</p>
+            <p style="font-size:0.85rem;color:var(--color-text-muted);">{{ bulletin.facility.address }}</p>
+            {% if bulletin.facility.phone %}
+              <p style="margin-top:0.5rem;"><a href="tel:{{ bulletin.facility.phone }}"> {{ bulletin.facility.phone }}</a></p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Blood types needed -->
+      {% if bulletin.blood_type_list %}
+        <div class="card mb-6">
+          <div class="card-header"><h4>Blood Types Needed</h4></div>
+          <div class="card-body">
+            <div class="blood-types-list" style="justify-content:center;gap:0.5rem;">
+              {% for bt in bulletin.blood_type_list %}
+                <span class="bt-badge" style="font-size:1rem;padding:8px 14px;">{{ bt }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Status -->
+      <div class="card">
+        <div class="card-body" style="font-size:0.85rem;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.5rem;">
+            <span class="text-muted">Status</span>
+            <span class="badge badge-{{ bulletin.status }}">{{ bulletin.get_status_display }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span class="text-muted">Posted</span>
+            <span>{{ bulletin.created_at|date:"M j, Y" }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a href="{% url 'bulletins:list' %}" style="display:inline-flex;align-items:center;gap:0.5rem;color:var(--color-text-muted);font-size:0.88rem;">← Back to Bulletins</a>
+</div>
+{% endblock %}

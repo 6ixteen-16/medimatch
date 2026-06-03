@@ -1,0 +1,10 @@
+{% if notified %}
+  <span class="badge badge-success" style="padding:10px 16px;">✓ SMS Sent</span>
+{% else %}
+  <form method="post" action="{% url 'bulletins:notify' bulletin.pk %}"
+        hx-post="{% url 'bulletins:notify' bulletin.pk %}"
+        hx-target="#notify-btn">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary"> Notify Donors by SMS</button>
+  </form>
+{% endif %}

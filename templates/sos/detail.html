@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}SOS #{{ sos.pk }}{% endblock %}
+{% block content %}
+<div class="page-header" style="background:{% if sos.urgency == 'critical' %}#8B0000{% else %}var(--color-primary){% endif %};">
+  <div class="container">
+    <div class="flex-between" style="flex-wrap:wrap;gap:1rem;">
+      <div>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;flex-wrap:wrap;">
+          <span style="font-size:1.5rem;"></span>
+          <h1 style="color:white;margin:0;">SOS Request #{{ sos.pk }}</h1>
+          <span class="badge {% if sos.urgency == 'critical' %}badge-danger{% elif sos.urgency == 'urgent' %}badge-warning{% else %}badge-info{% endif %}">
+            {{ sos.get_urgency_display }}
+          </span>
+          {% if sos.is_overdue %}<span class="badge badge-danger"> OVERDUE</span>{% endif %}
+        </div>
+        <p style="color:rgba(255,255,255,0.8);">{{ sos.requesting_facility.name }} · {{ sos.time_elapsed }} ago</p>
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+        <span class="badge badge-{% if sos.status == 'open' %}danger{% elif sos.status == 'acknowledged' %}warning{% elif sos.status == 'in_transit' %}info{% elif sos.status == 'resolved' %}success{% else %}muted{% endif %}" style="padding:10px 16px;font-size:0.85rem;">
+          {{ sos.get_status_display }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="grid-2" style="grid-template-columns:2fr 1fr;">
+    <!-- Main info -->
+    <div>
+      <div class="card mb-6">
+        <div class="card-header">
+          <h4>Request Details</h4>
+          <div style="display:flex;gap:0.5rem;">
+            <span class="bt-badge" style="font-size:1rem;padding:8px 14px;">{{ sos.blood_type_needed }}</span>
+            <span class="badge badge-navy">{{ sos.units_needed }} unit{{ sos.units_needed|pluralize }}</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="section-title">Clinical Context</p>
+          <p style="font-size:1.05rem;line-height:1.7;padding:1rem;background:var(--color-surface-alt);border-radius:var(--radius-md);">
+            {{ sos.patient_condition }}
+          </p>
+          <div class="divider"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div>
+              <p class="section-title">Requesting Facility</p>
+              <p style="font-weight:600;">{{ sos.requesting_facility.name }}</p>
+              <p style="font-size:0.85rem;color:var(--color-text-muted);">{{ sos.requesting_facility.address }}</p>
+            </div>
+            <div>
+              <p class="section-title">Target Blood Bank</p>
+              <p>{{ sos.target_bank.name|default:"All blood banks (broadcast)" }}</p>
+            </div>
+            <div>
+              <p class="section-title">Requested By</p>
+              <p>{{ sos.requested_by.get_full_name|default:"—" }}</p>
+            </div>
+            {% if sos.acknowledged_by %}
+            <div>
+              <p class="section-title">Acknowledged By</p>
+              <p>{{ sos.acknowledged_by.get_full_name }}</p>
+            </div>
+            {% endif %}
+            {% if sos.deadline %}
+            <div>
+              <p class="section-title">Deadline</p>
+              <p style="font-weight:600;{% if sos.is_overdue %}color:var(--color-danger);{% endif %}">{{ sos.deadline|date:"M j, H:i" }}</p>
+            </div>
+            {% endif %}
+            {% if sos.resolved_at %}
+            <div>
+              <p class="section-title">Resolved At</p>
+              <p>{{ sos.resolved_at|date:"M j, Y H:i" }}</p>
+            </div>
+            {% endif %}
+          </div>
+          {% if sos.resolution_notes %}
+            <div class="divider"></div>
+            <p class="section-title">Resolution Notes</p>
+            <p>{{ sos.resolution_notes }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Status history -->
+      <div class="card">
+        <div class="card-header"><h4>Status Timeline</h4></div>
+        <div class="card-body">
+          {% if updates %}
+            {% for update in updates %}
+              <div style="display:flex;gap:1rem;padding:0.75rem 0;border-bottom:1px solid var(--color-border);">
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--color-primary);margin-top:6px;flex-shrink:0;"></div>
+                <div>
+                  <p style="margin:0;font-weight:600;font-size:0.88rem;">
+                    {% if update.old_status %}{{ update.old_status }} →{% endif %}
+                    {{ update.new_status }}
+                  </p>
+                  {% if update.note %}<p style="margin:0;font-size:0.82rem;color:var(--color-text-muted);">{{ update.note }}</p>{% endif %}
+                  <p style="margin:0;font-size:0.78rem;color:var(--color-text-muted);">{{ update.updated_at|date:"M j, H:i" }} · {{ update.updated_by.get_full_name|default:"System" }}</p>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted">No updates yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions sidebar -->
+    <div>
+      <div class="card mb-6">
+        <div class="card-header"><h4>Actions</h4></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:0.75rem;">
+          {% if sos.status == 'open' and request.user.role in 'bank_admin,superadmin' %}
+            <form method="post" action="{% url 'sos:acknowledge' sos.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;">✓ Acknowledge</button>
+            </form>
+          {% endif %}
+          {% if sos.status == 'acknowledged' and request.user.role in 'bank_admin,superadmin' %}
+            <form method="post" action="{% url 'sos:transit' sos.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-secondary" style="width:100%;justify-content:center;"> Mark In Transit</button>
+            </form>
+          {% endif %}
+          {% if sos.status in 'open,acknowledged,in_transit' and request.user.role in 'clinic_admin,bank_admin,superadmin' %}
+            <div>
+              <p style="font-size:0.85rem;font-weight:600;margin-bottom:0.5rem;">Mark Resolved</p>
+              <form method="post" action="{% url 'sos:resolve' sos.pk %}">
+                {% csrf_token %}
+                {{ resolve_form.resolution_notes }}
+                <button type="submit" class="btn btn-success" style="width:100%;justify-content:center;margin-top:0.5rem;">✓ Resolve</button>
+              </form>
+            </div>
+          {% endif %}
+          {% if sos.status not in 'resolved,cancelled' and request.user.role in 'clinic_admin,superadmin' %}
+            <form method="post" action="{% url 'sos:cancel' sos.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-ghost" style="width:100%;justify-content:center;">✕ Cancel</button>
+            </form>
+          {% endif %}
+          {% if sos.status in 'resolved,cancelled' %}
+            <p class="text-muted text-center" style="font-size:0.88rem;">This SOS has been closed.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <a href="{% url 'sos:list' %}" style="display:inline-flex;align-items:center;gap:0.5rem;color:var(--color-text-muted);font-size:0.88rem;">← Back to SOS Board</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

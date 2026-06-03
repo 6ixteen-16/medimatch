@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Donor Registration — Step 1{% endblock %}
+{% block content %}
+<div style="padding:3rem 0;">
+  <div class="container-sm">
+    <!-- Progress -->
+    <div class="wizard-progress">
+      <div class="wizard-step">
+        <div class="wizard-circle active">1</div>
+        <span class="wizard-label active">Personal Info</span>
+      </div>
+      <div class="wizard-connector"></div>
+      <div class="wizard-step">
+        <div class="wizard-circle">2</div>
+        <span class="wizard-label">Health Checklist</span>
+      </div>
+      <div class="wizard-connector"></div>
+      <div class="wizard-step">
+        <div class="wizard-circle">3</div>
+        <span class="wizard-label">Transport &amp; Consent</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Personal Information</h3>
+        <span class="badge badge-info">Step 1 of 3</span>
+      </div>
+      <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          {{ wizard.management_form }}
+
+          <!-- Photo upload -->
+          <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;">
+            <img id="photo-preview" src="" alt="" style="display:none;width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--color-border);">
+            <div style="flex:1;">
+              <label>Profile photo (optional)</label>
+              {{ form.profile_photo }}
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Blood type *</label>
+              {{ form.blood_type }}
+              {% if form.blood_type.errors %}<p class="field-error">{{ form.blood_type.errors|join:", " }}</p>{% endif %}
+            </div>
+            <div class="form-group">
+              <label>Gender *</label>
+              {{ form.gender }}
+              {% if form.gender.errors %}<p class="field-error">{{ form.gender.errors|join:", " }}</p>{% endif %}
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label>Date of birth *</label>
+              {{ form.date_of_birth }}
+              {% if form.date_of_birth.errors %}<p class="field-error">{{ form.date_of_birth.errors|join:", " }}</p>{% endif %}
+            </div>
+            <div class="form-group">
+              <label>National ID *</label>
+              {{ form.national_id }}
+              {% if form.national_id.errors %}<p class="field-error">{{ form.national_id.errors|join:", " }}</p>{% endif %}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Home address *</label>
+            {{ form.address }}
+            {% if form.address.errors %}<p class="field-error">{{ form.address.errors|join:", " }}</p>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label>District *</label>
+            {{ form.district }}
+            {% if form.district.errors %}<p class="field-error">{{ form.district.errors|join:", " }}</p>{% endif %}
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:1rem;margin-top:1rem;">
+            <button type="submit" class="btn btn-primary">Next: Health Checklist →</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

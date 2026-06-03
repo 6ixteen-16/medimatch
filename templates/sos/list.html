@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}SOS Board{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div class="flex-between" style="flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h1>SOS Board</h1>
+        <p>Active emergency blood requests — real-time status tracking</p>
+      </div>
+      {% if request.user.role in 'clinic_admin,superadmin' %}
+        <a href="{% url 'sos:create' %}" class="btn btn-danger"> New SOS Request</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Live active SOS -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;">
+    <h3 style="margin:0;">Active Requests <span class="badge badge-danger" style="vertical-align:middle;">{{ active|length }}</span></h3>
+    <span style="font-size:0.78rem;color:var(--color-text-muted);">
+      Auto-refreshes every 30s
+      <span class="htmx-indicator" style="margin-left:0.5rem;">⟳</span>
+    </span>
+  </div>
+
+  <div id="active-sos"
+       hx-get="{% url 'sos:active_partial' %}"
+       hx-trigger="every 30s"
+       hx-swap="innerHTML">
+    {% include 'sos/_active_list.html' %}
+  </div>
+
+  <!-- Resolved -->
+  <div style="margin-top:3rem;">
+    <h3 style="margin-bottom:1.5rem;">Recent Resolutions</h3>
+    {% if resolved %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Facility</th><th>Blood Type</th><th>Urgency</th>
+              <th>Status</th><th>Created</th><th>Resolved</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sos in resolved %}
+            <tr>
+              <td><a href="{% url 'sos:detail' sos.pk %}" style="font-weight:600;">#{{ sos.pk }}</a></td>
+              <td>{{ sos.requesting_facility.name }}</td>
+              <td><span class="bt-badge">{{ sos.blood_type_needed }}</span></td>
+              <td><span class="badge badge-{% if sos.urgency == 'critical' %}danger{% elif sos.urgency == 'urgent' %}warning{% else %}info{% endif %}">{{ sos.get_urgency_display }}</span></td>
+              <td><span class="badge badge-{% if sos.status == 'resolved' %}success{% else %}muted{% endif %}">{{ sos.get_status_display }}</span></td>
+              <td style="font-size:0.82rem;color:var(--color-text-muted);">{{ sos.created_at|date:"M j, H:i" }}</td>
+              <td style="font-size:0.82rem;color:var(--color-text-muted);">{{ sos.resolved_at|date:"M j, H:i"|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted">No resolved requests yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

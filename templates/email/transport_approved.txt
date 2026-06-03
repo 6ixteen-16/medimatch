@@ -1,0 +1,6 @@
+MediMatch — Transport Approved
+
+Your transport assistance has been approved.
+Voucher code: {{ transport.voucher_code }}
+
+Show this to your driver.

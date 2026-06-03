@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Donor — {{ profile.user.get_full_name }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <div class="flex-between flex-wrap" style="gap:1rem;">
+      <div>
+        <h1 style="color:white;">{{ profile.user.get_full_name }}</h1>
+        <div style="display:flex;gap:0.75rem;align-items:center;margin-top:0.5rem;flex-wrap:wrap;">
+          <span class="bt-badge">{{ profile.blood_type }}</span>
+          <span class="badge badge-{{ profile.status }}">{{ profile.get_status_display }}</span>
+          <span style="color:rgba(255,255,255,0.7);font-size:0.85rem;">{{ profile.district }}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+        {% if profile.status == 'pending' and request.user.role in 'clinic_admin,superadmin' %}
+          <form method="post" action="{% url 'donors:approve' profile.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success">✓ Approve Donor</button>
+          </form>
+          <form method="post" action="{% url 'donors:flag' profile.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger"> Flag</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="grid-2">
+    <!-- Left column: personal info (staff only) -->
+    <div>
+      <div class="card mb-6">
+        <div class="card-header"><h4>Personal Information</h4><span style="font-size:0.75rem;color:var(--color-text-muted);">Staff view only</span></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <div><p class="section-title">Blood Type</p><span class="bt-badge">{{ profile.blood_type }}</span></div>
+            <div><p class="section-title">Gender</p><p>{{ profile.get_gender_display }}</p></div>
+            <div><p class="section-title">Date of Birth</p><p>{{ profile.date_of_birth|date:"M j, Y" }}</p></div>
+            <div><p class="section-title">Age</p><p>{{ profile.age }} years</p></div>
+            <div><p class="section-title">National ID</p><p class="mono">{{ profile.national_id }}</p></div>
+            <div><p class="section-title">Phone</p><p>{{ profile.user.phone_number|default:"—" }}</p></div>
+            <div><p class="section-title">District</p><p>{{ profile.district }}</p></div>
+            <div><p class="section-title">Total Donations</p><p>{{ profile.total_donations }}</p></div>
+          </div>
+          <div style="margin-top:1rem;">
+            <p class="section-title">Address</p>
+            <p style="color:var(--color-text-muted);">{{ profile.address }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eligibility checklist -->
+      {% if profile.eligibility %}
+      <div class="card">
+        <div class="card-header">
+          <h4>Eligibility Checklist</h4>
+          {% if profile.eligibility.is_auto_flagged %}
+            <span class="badge badge-flagged"> Auto-flagged</span>
+          {% else %}
+            <span class="badge badge-approved">✓ Clear</span>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          {% if profile.eligibility.flagged_reason %}
+            <div class="alert alert-danger">Flagged reason: {{ profile.eligibility.flagged_reason }}</div>
+          {% endif %}
+          <div style="font-size:0.85rem;">
+            {% for field in eligibility_fields %}
+              <div style="display:flex;justify-content:space-between;padding:0.5rem 0;border-bottom:1px solid var(--color-border);">
+                <span>{{ field.label|title }}</span>
+                <span>{% if field.value %}✓ Yes{% else %}○ No{% endif %}</span>
+              </div>
+            {% endfor %}
+          </div>
+          <p style="font-size:0.75rem;color:var(--color-text-muted);margin-top:1rem;">Completed: {{ profile.eligibility.completed_at|date:"M j, Y H:i" }}</p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Right column: transport, donations -->
+    <div>
+      {% if profile.needs_transport %}
+      <div class="card mb-6">
+        <div class="card-header">
+          <h4>Transport Needed</h4>
+          <a href="{% url 'transport:create' profile.pk %}" class="btn btn-primary btn-sm">+ Create Request</a>
+        </div>
+        <div class="card-body">
+          <p>{{ profile.transport_notes|default:"No additional notes." }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="card">
+        <div class="card-header"><h4>Donation History</h4></div>
+        <div class="card-body">
+          {% if profile.donations.all %}
+            {% for d in profile.donations.all %}
+            <div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--color-border);">
+              <div>
+                <p style="margin:0;font-weight:600;">{{ d.blood_units }}L at {{ d.facility.name }}</p>
+                {% if d.notes %}<p style="margin:0;font-size:0.82rem;color:var(--color-text-muted);">{{ d.notes }}</p>{% endif %}
+              </div>
+              <p style="margin:0;font-size:0.85rem;color:var(--color-text-muted);">{{ d.donated_at|date:"M j, Y" }}</p>
+            </div>
+            {% endfor %}
+          {% else %}
+            <p class="text-muted">No donation records yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

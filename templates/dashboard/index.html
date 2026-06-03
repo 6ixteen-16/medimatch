@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-header" style="padding:2rem 0;">
+  <div class="container">
+    <h1 style="color:white;margin-bottom:0.25rem;">Good {% now "H" as hour %}{% if hour < "12" %}morning{% elif hour < "17" %}afternoon{% else %}evening{% endif %}, {{ user.first_name }}!</h1>
+    <p>{{ user.get_role_display }} · {% now "l, F j, Y" %}</p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ═══════════ DONOR DASHBOARD ═══════════ -->
+  {% if user.role == 'donor' %}
+    {% if profile %}
+      <div class="grid-4" style="margin-bottom:2rem;">
+        <div class="stat-card accent">
+          <div class="stat-value">{{ profile.blood_type }}</div>
+          <div class="stat-label">Blood Type</div>
+        </div>
+        <div class="stat-card {% if profile.status == 'approved' %}success{% elif profile.status == 'flagged' %}accent{% else %}{% endif %}">
+          <div class="stat-value" style="font-size:1.5rem;">{{ profile.get_status_display }}</div>
+          <div class="stat-label">Profile Status</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">{{ profile.total_donations }}</div>
+          <div class="stat-label">Total Donations</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="font-size:1.25rem;">{{ profile.district }}</div>
+          <div class="stat-label">District</div>
+        </div>
+      </div>
+
+      {% if profile.status == 'approved' %}
+        <div class="alert alert-success">✓ Your profile is approved! You are eligible to donate blood. Respond to blood drives in your area.</div>
+      {% elif profile.status == 'flagged' %}
+        <div class="alert alert-warning"> Your profile has been flagged for clinical review. A health officer will contact you via {{ user.phone_number|default:"email" }}.</div>
+      {% elif profile.status == 'pending' %}
+        <div class="alert alert-info"> Your profile is under review. You will be notified once approved.</div>
+      {% endif %}
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h4>My Eligibility Status</h4></div>
+          <div class="card-body">
+            {% if profile.eligibility %}
+              {% if profile.eligibility.is_auto_flagged %}
+                <div class="alert alert-warning">Flagged: {{ profile.eligibility.flagged_reason }}</div>
+              {% else %}
+                <p style="color:var(--color-success);">✓ No disqualifying conditions found in your self-screening checklist.</p>
+              {% endif %}
+            {% endif %}
+            {% if profile.next_eligible_date %}
+              <p style="margin-top:1rem;">Next eligible to donate: <strong>{{ profile.next_eligible_date|date:"M j, Y" }}</strong></p>
+            {% endif %}
+            <a href="{% url 'donors:my_profile' %}" class="btn btn-ghost btn-sm" style="margin-top:1rem;">View full profile</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><h4>Recent Bulletins</h4></div>
+          <div class="card-body">
+            {% if recent_bulletins %}
+              {% for b in recent_bulletins|slice:":4" %}
+                <div style="padding:0.6rem 0;border-bottom:1px solid var(--color-border);">
+                  <a href="{% url 'bulletins:detail' b.pk %}" style="font-weight:600;font-size:0.9rem;color:var(--color-primary);">{{ b.title }}</a>
+                  <p style="margin:0;font-size:0.78rem;color:var(--color-text-muted);">{{ b.facility.name }} · {{ b.created_at|timesince }} ago</p>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-muted">No bulletins posted yet.</p>
+            {% endif %}
+            <a href="{% url 'bulletins:list' %}" class="btn btn-ghost btn-sm" style="margin-top:1rem;">View all bulletins</a>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <div class="card" style="max-width:600px;margin:0 auto;text-align:center;">
+        <div class="card-body" style="padding:3rem;">
+          <div style="font-size:4rem;margin-bottom:1.5rem;"></div>
+          <h2>Complete your donor profile</h2>
+          <p style="color:var(--color-text-muted);margin-bottom:2rem;">You're registered as a donor but haven't completed your profile yet. It takes about 3 minutes.</p>
+          <a href="{% url 'donors:register' %}" class="btn btn-primary btn-lg">Complete My Profile</a>
+        </div>
+      </div>
+    {% endif %}
+
+  <!-- ═══════════ STAFF DASHBOARD ═══════════ -->
+  {% elif user.role in 'clinic_admin,bank_admin,superadmin' %}
+
+    <!-- Stats row -->
+    <div class="grid-4" style="margin-bottom:2rem;">
+      <div class="stat-card">
+        <div class="stat-value">{{ total_donors }}</div>
+        <div class="stat-label">Total Donors</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-value">{{ approved_donors }}</div>
+        <div class="stat-label">Approved Donors</div>
+      </div>
+      <div class="stat-card warning">
+        <div class="stat-value">{{ pending_donors }}</div>
+        <div class="stat-label">Pending Review</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-value">{{ active_sos }}</div>
+        <div class="stat-label">Active SOS{% if overdue_sos %} · <span style="color:var(--color-danger);">{{ overdue_sos }} overdue</span>{% endif %}</div>
+      </div>
+    </div>
+
+    <!-- Action shortcuts -->
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;">
+      {% if user.role in 'clinic_admin,superadmin' %}
+        <a href="{% url 'sos:create' %}" class="btn btn-danger"> New SOS Request</a>
+      {% endif %}
+      <a href="{% url 'donors:list' %}" class="btn btn-secondary"> Search Donors</a>
+      {% if user.role in 'clinic_admin,bank_admin,superadmin' %}
+        <a href="{% url 'bulletins:create' %}" class="btn btn-ghost"> Post Bulletin</a>
+        <a href="{% url 'transport:list' %}" class="btn btn-ghost"> Transport ({{ pending_transport }})</a>
+      {% endif %}
+    </div>
+
+    <div class="grid-2">
+      <!-- Live SOS -->
+      <div>
+        <div class="card mb-6">
+          <div class="card-header">
+            <h4>Active SOS Requests</h4>
+            <a href="{% url 'sos:list' %}" style="font-size:0.82rem;">View all →</a>
+          </div>
+          <div class="card-body" style="padding:1rem;"
+               hx-get="{% url 'dashboard:stats' %}"
+               hx-trigger="every 30s"
+               hx-swap="innerHTML">
+            {% include 'dashboard/_stats.html' %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Blood type distribution chart -->
+      <div>
+        <div class="card mb-6">
+          <div class="card-header"><h4>Approved Donors by Blood Type</h4></div>
+          <div class="card-body">
+            {% if bt_labels %}
+              <canvas id="btChart" style="max-height:240px;"></canvas>
+            {% else %}
+              <p class="text-muted">No approved donors yet.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Pending transport -->
+        {% if pending_transport %}
+          <div class="alert alert-warning">
+             <strong>{{ pending_transport }} pending transport request{{ pending_transport|pluralize }}</strong> awaiting approval.
+            <a href="{% url 'transport:list' %}" style="margin-left:0.5rem;font-weight:600;">Review →</a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Recent bulletins table -->
+    <div class="card">
+      <div class="card-header">
+        <h4>Recent Bulletins</h4>
+        <a href="{% url 'bulletins:create' %}" class="btn btn-ghost btn-sm">+ New</a>
+      </div>
+      <div class="card-body" style="padding:0;">
+        {% if recent_bulletins %}
+          <table>
+            <thead>
+              <tr><th>Title</th><th>Category</th><th>Status</th><th>SMS</th><th>Posted</th><th></th></tr>
+            </thead>
+            <tbody>
+              {% for b in recent_bulletins %}
+              <tr>
+                <td><a href="{% url 'bulletins:detail' b.pk %}" style="font-weight:600;">{{ b.title }}</a></td>
+                <td><span class="badge badge-info">{{ b.get_category_display }}</span></td>
+                <td><span class="badge badge-{{ b.status }}">{{ b.get_status_display }}</span></td>
+                <td>{% if b.sms_sent %}✓{% else %}—{% endif %}</td>
+                <td style="font-size:0.82rem;color:var(--color-text-muted);">{{ b.created_at|date:"M j" }}</td>
+                <td><a href="{% url 'bulletins:detail' b.pk %}" class="btn btn-ghost btn-sm">View</a></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <div class="empty-state" style="padding:2rem;"><p>No bulletins yet.</p></div>
+        {% endif %}
+      </div>
+    </div>
+
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if bt_labels %}
+<script>
+const ctx = document.getElementById('btChart');
+if (ctx) {
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: {{ bt_labels|safe }},
+      datasets: [{
+        label: 'Approved Donors',
+        data: {{ bt_counts|safe }},
+        backgroundColor: [
+          '#1A5276','#1A5276','#8B0000','#8B0000',
+          '#6C3483','#6C3483','#196F3D','#196F3D'
+        ],
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+    }
+  });
+}
+</script>
+{% endif %}
+{% endblock %}
