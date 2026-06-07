@@ -1,0 +1,7 @@
+MEDIMATCH SOS ALERT #{{ sos.pk }}
+
+Urgency: {{ sos.get_urgency_display }}
+Blood type: {{ sos.blood_type_needed }} ({{ sos.units_needed }} units)
+From: {{ sos.requesting_facility.name }}
+
+Log in to respond: {{ site_url }}/sos/{{ sos.pk }}/

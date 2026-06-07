@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:2rem;color:#1A2B45;">
+<div style="background:#8B0000;padding:1.5rem 2rem;border-radius:8px 8px 0 0;">
+  <h1 style="color:white;margin:0;"> MediMatch SOS Alert</h1>
+</div>
+<div style="background:#fff;padding:2rem;border:1px solid #D5DCE8;border-top:none;border-radius:0 0 8px 8px;">
+  <h2>Emergency Blood Request #{{ sos.pk }}</h2>
+  <p><strong>Urgency:</strong> {{ sos.get_urgency_display }}</p>
+  <p><strong>Blood type needed:</strong> {{ sos.blood_type_needed }} ({{ sos.units_needed }} units)</p>
+  <p><strong>Requesting facility:</strong> {{ sos.requesting_facility.name }}</p>
+  <p>Log in to respond: <a href="{{ site_url }}/sos/{{ sos.pk }}/">View Request</a></p>
+</div>
+</body></html>

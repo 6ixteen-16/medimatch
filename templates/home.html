@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<!-- Hero -->
+<section style="background:var(--color-primary);color:white;padding:5rem 0;text-align:center;position:relative;overflow:hidden;">
+  <div style="position:absolute;font-size:20rem;opacity:0.03;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--font-display);line-height:1;">✛</div>
+  <div class="container" style="position:relative;">
+    <p class="section-title" style="color:var(--color-accent);margin-bottom:1rem;">Uganda's Blood Coordination Network</p>
+    <h1 style="color:white;font-size:3.25rem;margin-bottom:1.5rem;max-width:700px;margin-left:auto;margin-right:auto;">Every drop counts.<br>Every second matters.</h1>
+    <p style="color:rgba(255,255,255,0.75);font-size:1.15rem;max-width:540px;margin:0 auto 2.5rem;">MediMatch connects blood donors, clinics, and blood banks across Uganda for fast, coordinated emergency response.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">Become a Donor</a>
+      <a href="{% url 'bulletins:list' %}" class="btn btn-ghost btn-lg" style="color:white;border-color:rgba(255,255,255,0.4);">View Blood Drives</a>
+    </div>
+  </div>
+</section>
+
+<!-- Stats bar -->
+<section style="background:var(--color-accent);padding:1.5rem 0;">
+  <div class="container">
+    <div style="display:flex;justify-content:center;gap:4rem;flex-wrap:wrap;text-align:center;color:white;">
+      <div><div style="font-family:var(--font-display);font-size:2rem;">8</div><div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;opacity:0.85;">Blood Types Matched</div></div>
+      <div><div style="font-family:var(--font-display);font-size:2rem;">24/7</div><div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;opacity:0.85;">Emergency Response</div></div>
+      <div><div style="font-family:var(--font-display);font-size:2rem;">UG</div><div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;opacity:0.85;">Nationwide Network</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section style="padding:5rem 0;background:var(--color-surface);">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem;">
+      <p class="section-title">How It Works</p>
+      <h2>Three roles. One mission.</h2>
+    </div>
+    <div class="grid-3">
+      <div style="text-align:center;padding:2rem;">
+        <div style="width:64px;height:64px;background:#FEF2F2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.75rem;"></div>
+        <h3 style="margin-bottom:0.75rem;">Donors</h3>
+        <p style="color:var(--color-text-muted);">Register once. Get matched to blood drives and emergencies in your district. We handle transport if needed.</p>
+        <a href="{% url 'accounts:register' %}" class="btn btn-ghost btn-sm" style="margin-top:1rem;">Register as Donor</a>
+      </div>
+      <div style="text-align:center;padding:2rem;border-left:1px solid var(--color-border);border-right:1px solid var(--color-border);">
+        <div style="width:64px;height:64px;background:#EBF5FB;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.75rem;"></div>
+        <h3 style="margin-bottom:0.75rem;">Clinics</h3>
+        <p style="color:var(--color-text-muted);">Post blood drives, search donors by blood type and district, and send SOS requests to blood banks in seconds.</p>
+      </div>
+      <div style="text-align:center;padding:2rem;">
+        <div style="width:64px;height:64px;background:#EAFAF1;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:1.75rem;"></div>
+        <h3 style="margin-bottom:0.75rem;">Blood Banks</h3>
+        <p style="color:var(--color-text-muted);">Receive and respond to SOS requests with real-time status tracking and SLA enforcement.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Recent bulletins -->
+<section style="padding:5rem 0;background:var(--color-surface-alt);">
+  <div class="container">
+    <div class="flex-between mb-6">
+      <div>
+        <p class="section-title">Latest</p>
+        <h2 style="margin:0;">Blood Drive Bulletins</h2>
+      </div>
+      <a href="{% url 'bulletins:list' %}" class="btn btn-ghost">View all</a>
+    </div>
+    {% if recent_bulletins %}
+      <div class="grid-3">
+        {% for b in recent_bulletins %}
+          <div class="bulletin-card {% if b.category == 'urgent_appeal' %}urgent-appeal{% endif %}">
+            <div class="bulletin-card-body">
+              {% if b.category == 'urgent_appeal' %}
+                <span class="badge badge-danger" style="margin-bottom:0.75rem;">URGENT</span>
+              {% else %}
+                <span class="badge badge-info" style="margin-bottom:0.75rem;">{{ b.get_category_display }}</span>
+              {% endif %}
+              <h4 style="margin-bottom:0.5rem;"><a href="{% url 'bulletins:detail' b.pk %}" style="color:var(--color-primary);">{{ b.title }}</a></h4>
+              <p style="color:var(--color-text-muted);font-size:0.88rem;margin:0;">{{ b.facility.name }}</p>
+              {% if b.blood_type_list %}
+                <div class="blood-types-list">
+                  {% for bt in b.blood_type_list %}<span class="bt-badge">{{ bt }}</span>{% endfor %}
+                </div>
+              {% endif %}
+            </div>
+            <div class="bulletin-card-footer">
+              {% if b.event_date %} {{ b.event_date|date:"D, M j" }}{% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-icon"></div>
+        <h3>No bulletins yet</h3>
+        <p>Check back soon for blood drives near you.</p>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="background:var(--color-primary);padding:4rem 0;text-align:center;">
+  <div class="container">
+    <h2 style="color:white;margin-bottom:1rem;">Ready to save a life?</h2>
+    <p style="color:rgba(255,255,255,0.7);margin-bottom:2rem;font-size:1.05rem;">Join thousands of donors across Uganda. Registration takes 3 minutes.</p>
+    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">Register as a Donor</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block title %}Transport Requests{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>Transport Requests</h1>
+    <p>Manage donor transport assistance and voucher issuance</p>
+  </div>
+</div>
+<div class="container">
+  {% if transport_requests %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Donor</th><th>Blood Type</th><th>Facility</th><th>Pickup Location</th><th>Funding</th><th>Voucher</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for tr in transport_requests %}
+          <tr>
+            <td>
+              <a href="{% url 'donors:detail' tr.donor.pk %}" style="font-weight:600;">{{ tr.donor.user.get_full_name }}</a>
+              <div style="font-size:0.78rem;color:var(--color-text-muted);">{{ tr.donor.district }}</div>
+            </td>
+            <td><span class="bt-badge">{{ tr.donor.blood_type }}</span></td>
+            <td>{{ tr.facility.name }}</td>
+            <td style="max-width:200px;font-size:0.85rem;">{{ tr.pickup_address|truncatechars:60 }}</td>
+            <td><span class="badge badge-info">{{ tr.get_funding_source_display }}</span></td>
+            <td>{% if tr.voucher_code %}<code>{{ tr.voucher_code }}</code>{% else %}—{% endif %}</td>
+            <td><span class="badge badge-{{ tr.status }}">{{ tr.get_status_display }}</span></td>
+            <td>
+              <div style="display:flex;gap:0.5rem;">
+                {% if tr.status == 'pending' %}
+                  <form method="post" action="{% url 'transport:approve' tr.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                  </form>
+                {% elif tr.status == 'approved' %}
+                  <form method="post" action="{% url 'transport:complete' tr.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-secondary btn-sm">Complete</button>
+                  </form>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-icon"></div>
+      <h3>No transport requests</h3>
+      <p>Transport requests are created from donor profiles when transport assistance is needed.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

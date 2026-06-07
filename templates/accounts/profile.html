@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}My Account{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>My Account</h1>
+    <p>{{ user.get_full_name }} · {{ user.get_role_display }}</p>
+  </div>
+</div>
+<div class="container-sm">
+  <div class="card"><div class="card-body">
+    <div style="display:flex;gap:1.5rem;align-items:center;margin-bottom:2rem;">
+      <div class="avatar" style="width:64px;height:64px;font-size:1.5rem;">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+      <div>
+        <h3 style="margin-bottom:0.25rem;">{{ user.get_full_name }}</h3>
+        <p style="color:var(--color-text-muted);margin:0;">{{ user.email }}</p>
+        {% if user.phone_number %}<p style="color:var(--color-text-muted);margin:0;font-size:0.88rem;">{{ user.phone_number }}</p>{% endif %}
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:space-between;margin-top:1.5rem;">
+      <div>
+        <p class="section-title">Role</p>
+        <span class="badge badge-navy">{{ user.get_role_display }}</span>
+      </div>
+      {% if user.facility %}
+      <div>
+        <p class="section-title">Facility</p>
+        <p>{{ user.facility.name }}</p>
+      </div>
+      {% endif %}
+      <div>
+        <a href="{% url 'account_change_password' %}" class="btn btn-ghost btn-sm">Change Password</a>
+      </div>
+    </div>
+  </div></div>
+</div>
+{% endblock %}

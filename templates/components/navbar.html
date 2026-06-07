@@ -1,0 +1,64 @@
+{% load static %}
+<nav class="navbar">
+  <div class="container">
+    <a href="{% url 'home' %}" class="navbar-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+        <path d="M11 6h2v12h-2zM6 11h12v2H6z" fill="#C0392B"/>
+      </svg>
+      MediMatch
+    </a>
+
+    <nav class="navbar-nav">
+      <a href="{% url 'bulletins:list' %}" {% if request.resolver_match.app_name == 'bulletins' %}class="active"{% endif %}>Bulletins</a>
+      {% if user.is_authenticated and user.role in 'clinic_admin,bank_admin,superadmin' %}
+        <a href="{% url 'donors:list' %}" {% if request.resolver_match.app_name == 'donors' %}class="active"{% endif %}>Find Donors</a>
+        <a href="{% url 'sos:list' %}" style="position:relative;" {% if request.resolver_match.app_name == 'sos' %}class="active"{% endif %}>
+          SOS Board
+          {% if open_sos_count and open_sos_count > 0 %}<span class="sos-dot"></span>{% endif %}
+        </a>
+      {% endif %}
+    </nav>
+
+    <div class="navbar-actions">
+      {% if user.is_authenticated %}
+        <div class="dropdown">
+          <div class="avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+          <div class="dropdown-menu">
+            <a href="{% url 'dashboard:home' %}">Dashboard</a>
+            {% if user.role == 'donor' %}
+              <a href="{% url 'donors:my_profile' %}">My Profile</a>
+            {% endif %}
+            <a href="{% url 'accounts:profile' %}">Account</a>
+            <form method="post" action="{% url 'accounts:logout' %}">
+              {% csrf_token %}
+              <button type="submit">Logout</button>
+            </form>
+          </div>
+        </div>
+      {% else %}
+        <a href="{% url 'accounts:login' %}" class="btn btn-ghost btn-sm" style="color:rgba(255,255,255,0.85);border-color:rgba(255,255,255,0.3);">Login</a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Register</a>
+      {% endif %}
+    </div>
+
+    <div class="hamburger" id="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="{% url 'bulletins:list' %}">Bulletins</a>
+  {% if user.is_authenticated and user.role in 'clinic_admin,bank_admin,superadmin' %}
+    <a href="{% url 'donors:list' %}">Find Donors</a>
+    <a href="{% url 'sos:list' %}">SOS Board</a>
+  {% endif %}
+  {% if user.is_authenticated %}
+    <a href="{% url 'dashboard:home' %}">Dashboard</a>
+    <a href="{% url 'accounts:profile' %}">Account</a>
+  {% else %}
+    <a href="{% url 'accounts:login' %}">Login</a>
+    <a href="{% url 'accounts:register' %}">Register as Donor</a>
+  {% endif %}
+</div>

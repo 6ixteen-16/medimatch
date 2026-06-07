@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}{% if bulletin %}Edit Bulletin{% else %}New Bulletin{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>{% if bulletin %}Edit Bulletin{% else %}Post a New Bulletin{% endif %}</h1>
+    <p>Publish blood drives, urgent appeals, or awareness campaigns</p>
+  </div>
+</div>
+<div class="container-sm">
+  <div class="card">
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+          <label>Title *</label>
+          {{ form.title }}
+          {% if form.title.errors %}<p class="field-error">{{ form.title.errors|join:", " }}</p>{% endif %}
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Category *</label>
+            {{ form.category }}
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            {{ form.status }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Announcement body *</label>
+          {{ form.body }}
+          {% if form.body.errors %}<p class="field-error">{{ form.body.errors|join:", " }}</p>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>Blood types needed</label>
+          {{ form.blood_types_needed }}
+          <p style="font-size:0.78rem;color:var(--color-text-muted);margin-top:4px;">Comma-separated, e.g. O+, A-, B+. Leave blank if all types welcome.</p>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Event date</label>
+            {{ form.event_date }}
+          </div>
+          <div class="form-group">
+            <label>Event time</label>
+            {{ form.event_time }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Event location</label>
+          {{ form.event_location }}
+        </div>
+        <div style="display:flex;gap:1rem;justify-content:flex-end;margin-top:1rem;">
+          <a href="{% url 'bulletins:list' %}" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary">
+            {% if bulletin %}Save Changes{% else %}Create Bulletin{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+MediMatch — Donor Profile Approved
+
+Dear {{ user.first_name }},
+
+Your donor profile has been approved. Blood type: {{ profile.blood_type }}.
+You will receive notifications for blood drives in your area.
+
+The MediMatch Team

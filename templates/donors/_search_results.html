@@ -1,0 +1,60 @@
+{% if donors %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Donor</th>
+        <th>Blood Type</th>
+        <th>Status</th>
+        <th>District</th>
+        <th>Last Donation</th>
+        <th>Transport</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for donor in donors %}
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            {% if donor.profile_photo %}
+              <img src="{{ donor.profile_photo.url }}" class="profile-photo" style="width:36px;height:36px;" alt="">
+            {% else %}
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;font-weight:700;">
+                {{ donor.user.first_name|first|upper }}
+              </div>
+            {% endif %}
+            <div>
+              <div style="font-weight:600;">{{ donor.user.get_full_name }}</div>
+              <div style="font-size:0.78rem;color:var(--color-text-muted);">{{ donor.user.email }}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="bt-badge">{{ donor.blood_type }}</span></td>
+        <td><span class="badge badge-{{ donor.status }}">{{ donor.get_status_display }}</span></td>
+        <td>{{ donor.district }}</td>
+        <td>{{ donor.last_donation_date|date:"M j, Y"|default:"—" }}</td>
+        <td>{% if donor.needs_transport %}<span class="badge badge-info">Yes</span>{% else %}—{% endif %}</td>
+        <td>
+          <div style="display:flex;gap:0.5rem;">
+            <a href="{% url 'donors:detail' donor.pk %}" class="btn btn-ghost btn-sm">View</a>
+            {% if request.user.role in 'clinic_admin,superadmin' and donor.status == 'pending' %}
+              <form method="post" action="{% url 'donors:approve' donor.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-sm">Approve</button>
+              </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-icon"></div>
+  <h3>No donors found</h3>
+  <p>Try adjusting your search filters.</p>
+</div>
+{% endif %}

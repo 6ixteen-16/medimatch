@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}New Transport Request{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <h1>Create Transport Request</h1>
+    <p>For donor: {{ donor.user.get_full_name }} · <span class="bt-badge">{{ donor.blood_type }}</span></p>
+  </div>
+</div>
+<div class="container-sm">
+  <div class="card">
+    <div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+          <label>Destination Facility *</label>
+          {{ form.facility }}
+          <small style="color:var(--color-text-muted);">{{ form.facility.help_text }}</small>
+        </div>
+        <div class="form-group">
+          <label>Pickup address *</label>
+          {{ form.pickup_address }}
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Estimated cost (UGX)</label>
+            {{ form.estimated_cost }}
+          </div>
+          <div class="form-group">
+            <label>Funding source</label>
+            {{ form.funding_source }}
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Linked SOS (optional)</label>
+            {{ form.sos_request }}
+          </div>
+          <div class="form-group">
+            <label>Linked Bulletin (optional)</label>
+            {{ form.bulletin }}
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          {{ form.notes }}
+        </div>
+        <div style="display:flex;gap:1rem;justify-content:flex-end;">
+          <a href="{% url 'donors:detail' donor.pk %}" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary">Create Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

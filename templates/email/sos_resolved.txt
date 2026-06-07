@@ -1,0 +1,4 @@
+MediMatch — SOS #{{ sos.pk }} Resolved
+
+The emergency from {{ sos.requesting_facility.name }} has been resolved.
+{% if sos.resolution_notes %}Notes: {{ sos.resolution_notes }}{% endif %}

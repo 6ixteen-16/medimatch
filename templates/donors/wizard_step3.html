@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}Donor Registration — Consent{% endblock %}
+{% block content %}
+<div style="padding:3rem 0;">
+  <div class="container-sm">
+    <div class="wizard-progress">
+      <div class="wizard-step"><div class="wizard-circle done">✓</div><span class="wizard-label">Personal Info</span></div>
+      <div class="wizard-connector done"></div>
+      <div class="wizard-step"><div class="wizard-circle done">✓</div><span class="wizard-label">Health Checklist</span></div>
+      <div class="wizard-connector done"></div>
+      <div class="wizard-step"><div class="wizard-circle active">3</div><span class="wizard-label active">Transport &amp; Consent</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h3>Transport &amp; Consent</h3>
+        <span class="badge badge-info">Step 3 of 3</span>
+      </div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {{ wizard.management_form }}
+
+          <div style="background:var(--color-surface-alt);border-radius:var(--radius-md);padding:1.5rem;margin-bottom:2rem;">
+            <h4 style="margin-bottom:1rem;"> Transport Assistance</h4>
+            <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+              {{ form.needs_transport }}
+              <label for="{{ form.needs_transport.id_for_label }}" style="font-weight:400;cursor:pointer;margin:0;">{{ form.needs_transport.label }}</label>
+            </div>
+
+            <div id="transport-details" style="display:none;margin-top:1rem;">
+              <div class="form-group">
+                <label>Transport details</label>
+                {{ form.transport_notes }}
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#FEF9F0;border:1px solid #F0C040;border-radius:var(--radius-md);padding:1.5rem;margin-bottom:2rem;">
+            <h4 style="margin-bottom:1rem;"> Consent Declaration</h4>
+            <div style="display:flex;align-items:flex-start;gap:0.75rem;">
+              {{ form.consent }}
+              <label for="{{ form.consent.id_for_label }}" style="font-size:0.9rem;font-weight:400;cursor:pointer;margin:0;line-height:1.5;">
+                {{ form.consent.label }}
+              </label>
+            </div>
+            {% if form.consent.errors %}<p class="field-error">{{ form.consent.errors|join:", " }}</p>{% endif %}
+          </div>
+
+          <div style="display:flex;justify-content:space-between;">
+            <button type="submit" name="wizard_goto_step" value="eligibility" class="btn btn-ghost">← Back</button>
+            <button type="submit" class="btn btn-primary btn-lg">✓ Complete Registration</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

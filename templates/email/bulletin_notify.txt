@@ -1,0 +1,6 @@
+{{ bulletin.title }}
+
+{{ bulletin.facility.name }}
+{% if bulletin.event_date %}Date: {{ bulletin.event_date }}{% endif %}
+
+{{ bulletin.body }}

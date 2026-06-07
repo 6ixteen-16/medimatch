@@ -1,0 +1,31 @@
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>MediMatch</h4>
+        <p style="max-width:280px;margin-bottom:1rem;">Community blood coordination and emergency response system. Every drop counts. Every second matters.</p>
+        <p style="font-size:0.75rem;opacity:0.6;">Serving Uganda's communities since 2026</p>
+      </div>
+      <div>
+        <h4>Platform</h4>
+        <a href="{% url 'bulletins:list' %}" style="display:block;margin-bottom:0.5rem;">Blood Drive Bulletins</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'dashboard:home' %}" style="display:block;margin-bottom:0.5rem;">Dashboard</a>
+        {% else %}
+          <a href="{% url 'accounts:register' %}" style="display:block;margin-bottom:0.5rem;">Become a Donor</a>
+          <a href="{% url 'accounts:login' %}" style="display:block;margin-bottom:0.5rem;">Staff Login</a>
+        {% endif %}
+        <a href="{% url 'about' %}" style="display:block;margin-bottom:0.5rem;">About</a>
+      </div>
+      <div>
+        <h4>Emergency Contacts</h4>
+        <p style="margin-bottom:0.5rem;">National Blood Bank<br><a href="tel:+256414340506">+256 414 340 506</a></p>
+        <p style="margin-bottom:0.5rem;">Red Cross Uganda<br><a href="tel:+256414258701">+256 414 258 701</a></p>
+        <p style="font-size:0.75rem;margin-top:1rem;opacity:0.6;">For life-threatening emergencies, call 911 or your nearest hospital immediately.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p> 2026 MediMatch — Community Blood Coordination System. Built for Uganda's health workers and donors.</p>
+    </div>
+  </div>
+</footer>

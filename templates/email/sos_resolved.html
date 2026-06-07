@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:2rem;color:#1A2B45;">
+<div style="background:#1A7A4A;padding:1.5rem 2rem;border-radius:8px 8px 0 0;">
+  <h1 style="color:white;margin:0;">✓ MediMatch — SOS Resolved</h1>
+</div>
+<div style="background:#fff;padding:2rem;border:1px solid #D5DCE8;border-top:none;border-radius:0 0 8px 8px;">
+  <h2>SOS Request #{{ sos.pk }} Resolved</h2>
+  <p>The emergency blood request from <strong>{{ sos.requesting_facility.name }}</strong> has been resolved.</p>
+  {% if sos.resolution_notes %}<p><strong>Notes:</strong> {{ sos.resolution_notes }}</p>{% endif %}
+</div>
+</body></html>
