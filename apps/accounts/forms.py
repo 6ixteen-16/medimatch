@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.utils import timezone
 from .models import CustomUser
 
 
@@ -10,6 +11,12 @@ class CustomUserCreationForm(UserCreationForm):
     first_name = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'placeholder': 'First name'}))
     last_name  = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'placeholder': 'Last name'}))
     phone_number = forms.CharField(max_length=20, required=False, widget=forms.TextInput(attrs={'placeholder': '+256 700 000 000'}))
+    date_of_birth = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label='Date of birth',
+        help_text='You must be at least 25 years old to register.',
+    )
     role = forms.ChoiceField(choices=[
         ('donor', 'Donor'),
         ('clinic_admin', 'Clinic Staff'),
@@ -18,7 +25,20 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name', 'email', 'phone_number', 'role', 'password1', 'password2')
+        fields = ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'role', 'password1', 'password2')
+
+    def clean_date_of_birth(self):
+        dob = self.cleaned_data.get('date_of_birth')
+        if dob:
+            today = timezone.localdate()
+            if dob > today:
+                raise forms.ValidationError('Date of birth cannot be in the future.')
+            age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            if age < 25:
+                raise forms.ValidationError(
+                    'You must be at least 25 years old to register on this platform.'
+                )
+        return dob
 
     def save(self, commit=True):
         user = super().save(commit=False)
