@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Server Error{% endblock %}
+
+{% block content %}
+<div class="container" style="text-align: center; padding: 6rem 0; min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+  <h1 style="font-size: 8rem; margin: 0; color: var(--color-accent); font-family: 'DM Serif Display', serif; line-height: 1;">500</h1>
+  <h2 style="font-size: 2.5rem; margin-top: 1rem; margin-bottom: 0.5rem;">Internal Server Error</h2>
+  <p style="color: var(--color-text-muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto 2rem auto;">
+    Something went wrong on our end. We're working to fix the issue. Please try again later.
+  </p>
+  <div style="display: flex; gap: 1rem; justify-content: center;">
+    <a href="{% url 'dashboard:home' %}" class="btn btn-primary">Go to Dashboard</a>
+    <a href="javascript:location.reload()" class="btn btn-ghost">Try Again</a>
+  </div>
+</div>
+{% endblock %}

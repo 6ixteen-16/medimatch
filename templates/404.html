@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+<div class="container" style="text-align: center; padding: 6rem 0; min-height: 60vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+  <h1 style="font-size: 8rem; margin: 0; color: var(--color-primary); font-family: 'DM Serif Display', serif; line-height: 1;">404</h1>
+  <h2 style="font-size: 2.5rem; margin-top: 1rem; margin-bottom: 0.5rem;">Page Not Found</h2>
+  <p style="color: var(--color-text-muted); font-size: 1.1rem; max-width: 500px; margin: 0 auto 2rem auto;">
+    We couldn't find the page you're looking for. It might have been removed, had its name changed, or is temporarily unavailable.
+  </p>
+  <div style="display: flex; gap: 1rem; justify-content: center;">
+    <a href="{% url 'dashboard:home' %}" class="btn btn-primary">Go to Dashboard</a>
+    <a href="javascript:history.back()" class="btn btn-ghost">Go Back</a>
+  </div>
+</div>
+{% endblock %}
