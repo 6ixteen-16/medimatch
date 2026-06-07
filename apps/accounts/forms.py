@@ -25,7 +25,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('first_name', 'last_name', 'email', 'phone_number', 'date_of_birth', 'role', 'password1', 'password2')
+        fields = ('first_name', 'last_name', 'email', 'phone_number', 'role', 'password1', 'password2')
 
     def clean_date_of_birth(self):
         dob = self.cleaned_data.get('date_of_birth')

@@ -38,7 +38,7 @@ class DonorProfile(models.Model):
         age = today.year - self.date_of_birth.year - (
             (today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day)
         )
-        return 18 <= age <= 65
+        return 25 <= age <= 65
 
     def age(self):
         today = date.today()

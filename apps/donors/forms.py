@@ -19,6 +19,18 @@ class DonorPersonalInfoForm(forms.Form):
             raise forms.ValidationError("A donor with this National ID already exists.")
         return nid
 
+    def clean_date_of_birth(self):
+        dob = self.cleaned_data.get('date_of_birth')
+        if dob:
+            from django.utils import timezone
+            today = timezone.localdate()
+            if dob > today:
+                raise forms.ValidationError('Date of birth cannot be in the future.')
+            age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            if age < 25:
+                raise forms.ValidationError('You must be at least 25 years old to register as a donor.')
+        return dob
+
 
 class YesNoRadioWidget(forms.RadioSelect):
     def __init__(self):
